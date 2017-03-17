@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>访问器属性</title>
+</head>
+<body>
+	<script type="text/javascript">
+		var obj = {};
+		/*get和set方法内部的this都指向obj*/
+		Object.defineProperty(obj, 'hello',{
+			get: function() {
+				console.log("get方法被调用了");
+			},
+			set: function(val) {
+				console.log("set方法被调用了，参数是：" + val);
+			}
+		});
+
+		obj.hello;
+		obj.hello = 'abc';
+
+
+	</script>
+</body>
+</html>

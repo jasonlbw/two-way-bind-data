@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>正式双向绑定</title>
+</head>
+<body>
+	<div id="app">
+		<input type="text" id="a" />
+		<span id="b"></span>
+	</div>
+	<script type="text/javascript">
+		/* example#1
+		var app = document.getElementById('app');
+		var dom = nodeToFragment(app);
+
+		console.log(dom);
+
+		function nodeToFragment(node) {
+			var flag = document.createDocumentFragment();
+			var child;
+			while(child = node.firstChild) {
+				flag.appendChild(child);//劫持node的所有子节点
+			}
+			return flag;
+		}
+
+		app.appendChild(dom);//返回到app中
+		*/
+
+
+		//编译模板数据
+		function compile(node ,vm) {
+			var reg = /\{\{(.*)\}\}/;
+
+			//根据节点类型来渲染
+			if(node.nodeType === 1) { //元素
+				var attrs = node.attributes;
+				for(var i = 0, j = attrs.length; i < j; i ++) {
+					var attr = attrs[i];
+					if(attr.nodeName === 'v-model') {
+						var name = attr.nodeValue;
+						node.value = vm.data[name];
+						node.removeAttribute('v-model');
+					}
+				}
+			} else if(node.nodeType === 3) { //text
+				if(reg.test(node.nodeValue)) {
+					var name = RegExp.$1.trim();
+					node.nodeValue = vm.data[name];
+				}
+			}
+		}
+
+		
+
+	</script>
+</body>
+</html>

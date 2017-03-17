@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>极简双向绑定的实现</title>
+</head>
+<body>
+	<input type="text" id='a'>
+	<span id='b'></span>
+	<script type="text/javascript">
+		var inputDom = document.getElementById('a');
+		var txtDom = document.getElementById('b');
+
+		var obj = {};
+		Object.defineProperty(obj, 'hello', {
+			set: function(val) {
+				inputDom.val = val;
+				txtDom.innerHTML = val;
+			}
+		});
+
+		inputDom.addEventListener('keyup', function(e) {
+			e = e || window.event;
+			obj.hello = e.target.value;
+		});
+	</script>
+</body>
+</html>
