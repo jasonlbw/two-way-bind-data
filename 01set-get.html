@@ -7,7 +7,7 @@
 <body>
 	<script type="text/javascript">
 		var obj = {};
-		/*get和set方法内部的this都指向obj*/
+		//get和set方法内部的this都指向obj
 		Object.defineProperty(obj, 'hello',{
 			get: function() {
 				console.log("get方法被调用了");
@@ -19,8 +19,6 @@
 
 		obj.hello;
 		obj.hello = 'abc';
-
-
 	</script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>观察者模式</title>
+</head>
+<body>
+	<script type="text/javascript">
+		var pub = {
+			publish: function() {
+				dep.notify();
+			}
+		}
+
+		//三个订阅者subscribers
+		var sub1 = { update: function() { console.log(1); } };
+		var sub2 = { update: function() { console.log(2); } };
+		var sub3 = { update: function() { console.log(3); } };
+
+		function Dep() {
+			this.subs = [sub1, sub2, sub3];
+		}
+		Dep.prototype.notify = function() {
+			this.subs.forEach(function(sub) {
+				sub.update();
+			});
+		}
+
+		var dep = new Dep();
+		pub.publish();
+	</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>最终双向绑定原理版本</title>
+</head>
+<body>
+	<div id="app">
+		<input type="text" id="a" v-model="msg" />
+		{{ msg }}
+	</div>
+
+	<script type="text/javascript">
+		/*
+		 * 观察者模式几要素
+		 * 1.首先定义订阅者，订阅者定义update方法用来收到消息时触发;
+		 * 2.定义主题类，主题类中添加订阅者列表;
+		 * 3.发布者发布消息时触发主体对象的消息提醒方法.
+		 */
+
+		//定义订阅者类
+		function Watcher(vm, name, node) {
+			Dep.target = this;
+
+			this.vm = vm;
+			this.name = name;
+			this.node = node;
+			this.update();
+
+			Dep.target = null;
+		}
+		Watcher.prototype = {
+			update: function() {
+				this.value = this.vm.data[this.name];//触发该属性的get访问器
+				this.node.nodeValue = this.value;
+			}
+		}
+		//定义主题类
+		function Dep() {
+			this.subs = [];
+		}
+		Dep.prototype = {
+			addSub: function(sub) {
+				this.subs.push(sub);
+			},
+			notify: function() {
+				this.subs.forEach(function(sub) {
+					sub.update();
+				});
+			}
+		}
+
+		//简单的渲染节点
+		function compile(node, vm) {
+			var reg = /\{\{(.*)\}\}/;
+
+			if(node.nodeType === 1) { //元素
+				var attrs = node.attributes;
+				for(var i = 0; i < attrs.length; i++) {
+					var attr = attrs[i];
+					//判断是否有v-model属性
+					if(attr.nodeName === 'v-model') {
+						var name = attr.nodeValue;
+						node.addEventListener('input', function(e) {
+							e = e || window.event;
+
+							vm.data[name] = e.target.value;
+						});
+
+						node.value = vm.data[name];
+						node.removeAttribute('v-model');
+					}
+				}
+			} else if(node.nodeType === 3) { //文本
+				if(reg.test(node.nodeValue)) {
+					var name = RegExp.$1.trim();
+					
+					new Watcher(vm, name, node);
+				}
+			}
+		}
+
+
+		//劫持指定元素中的所有节点
+		function nodeToFragment(node, vm) {
+			var dom = document.createDocumentFragment();
+
+			var child = null;
+			while(child = node.firstChild) {
+				//编译节点中的数据
+				compile(child, vm);
+				dom.appendChild(child);
+			}
+			return dom;
+		}
+
+		//监控对象上的属性(双向绑定核心原理)
+		function defineReactive(obj, key, val) {
+			var dep = new Dep();
+			Object.defineProperty(obj, key, {
+				get: function() {
+					if(Dep.target) dep.addSub(Dep.target);
+					return val;
+				},
+				set: function(newVal) {
+					if(val === newVal) return false;
+					val = newVal;
+					
+					dep.notify();
+				}
+			});
+		}
+
+		//循环数据对象的所有属性并监控
+		function observe(vm) {
+			Object.keys(vm).forEach(function(name) {
+				defineReactive(vm, name, vm[name]);
+			});
+		}
+
+		//VUE构造函数
+		function Vue(options) {
+			var app = document.getElementById(options.el);
+			this.data = options.data;
+
+			//监控对象上的所有属性
+			observe(this.data);
+
+			//劫持app中的所有节点并根据数据渲染节点内容
+			var dom = nodeToFragment(app, this);
+
+			app.appendChild(dom);
+		}
+
+		var vm = new Vue({
+			el: 'app',
+			data: {
+				'msg': '我是测试的'
+			}
+		})
+	</script>
+</body>
+</html>
